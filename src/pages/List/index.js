@@ -156,6 +156,7 @@ export default function App() {
         <Button onClick={fetchData}>+</Button>
         <Button
           onClick={() => {
+            setOpenIndex(-1)
             setList(shuffleArray(list));
           }}
         >
