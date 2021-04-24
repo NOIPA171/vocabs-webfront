@@ -7,6 +7,7 @@ import Input from "components/Input";
 import Dropdown from "components/Dropdown";
 
 import { priorityList } from "./lists";
+import { shuffleArray } from "utils/functions";
 import moment from "moment-timezone";
 import className from "classnames/bind";
 import styles from "./style.module.scss";
@@ -17,26 +18,29 @@ const sortList = (list) => list.sort((a, b) => b.priority - a.priority);
 const setStorage = (list) =>
   localStorage.setItem("vocabs", JSON.stringify(list));
 
-export default function App() {
-  const fullList = useRef(JSON.parse(localStorage.getItem("vocabs") || "[]"))
-  const [keyword, setKeyword] = useState("");
-  const [display, setDisplay] = useState(null);
-  const [list, setList] = useState(fullList.current);
-  const [filterPrrty, setFilterPrrty] = useState(null)
-  const [isLoading, setIsLoading] = useState(false);
+const frmt = "YYYY/MM/DD";
+const fullList = JSON.parse(localStorage.getItem("vocabs") || "[]");
 
+export default function App() {
+  const [keyword, setKeyword] = useState("");
+  const [date, setDate] = useState(moment().format(frmt));
+  const [display, setDisplay] = useState(null);
+  const [list, setList] = useState(fullList);
+  const [isLoading, setIsLoading] = useState(false);
   const [openIndex, setOpenIndex] = useState(-1);
 
+  const [filterPrrty, setFilterPrrty] = useState(null);
+
   useEffect(() => {
-    setList(prev => {
-      if(filterPrrty === null){
-        return fullList.current
+    setList((prev) => {
+      if (filterPrrty === null) {
+        return fullList;
       }
-      return fullList.current.filter(vocab => {
-        return vocab.priority === filterPrrty
-      })
-    })
-  }, [filterPrrty])
+      return fullList.filter((vocab) => {
+        return vocab.priority === filterPrrty;
+      });
+    });
+  }, [filterPrrty]);
 
   const getListDatesData = () => {
     return list.reduce((obj, currValue) => {
@@ -49,7 +53,6 @@ export default function App() {
   const setData = (list) => {
     setStorage(list);
     setList(list);
-    fullList.current = list
   };
 
   const fetchData = async () => {
@@ -63,7 +66,7 @@ export default function App() {
             ...res[0],
             status: "success",
             priority: 3,
-            created_at: moment().format("YYYY/MM/DD"),
+            created_at: date,
           });
           //has word
         } else {
@@ -93,6 +96,8 @@ export default function App() {
   };
 
   const deleteVocab = (index) => {
+    const ans = window.confirm('are you sure?')
+    if(!ans) return;
     setOpenIndex(-1);
     setList((prev) => {
       const newList = prev.concat([]);
@@ -132,6 +137,13 @@ export default function App() {
       </nav>
       <div className={cx("bar")}>
         <Input
+          type="date"
+          value={moment(date).format("YYYY-MM-DD")}
+          onChange={(evt) => {
+            setDate(moment(evt.target.value).format(frmt));
+          }}
+        />
+        <Input
           value={keyword}
           onChange={(evt) => setKeyword(evt.target.value)}
           onKeyDown={(evt) => {
@@ -141,7 +153,14 @@ export default function App() {
           }}
           disabled={isLoading}
         />
-        <Button onClick={fetchData}>Search & add to deck</Button>
+        <Button onClick={fetchData}>+</Button>
+        <Button
+          onClick={() => {
+            setList(shuffleArray(list));
+          }}
+        >
+          Shuffle Deck
+        </Button>
         {/* <Button onClick={() => setData(sortList(list))}>sort deck</Button> */}
         <Dropdown
           options={priorityList}

@@ -77,18 +77,21 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
         ) : (
           selectedVocab.notes && (
             <>
-              Notes: <p className={cx('notes')}>{selectedVocab.notes}</p>
+              Notes: <p className={cx("notes")}>{selectedVocab.notes}</p>
             </>
           )
         )}
         {selectedVocab.meanings.map((meaning, idx) => (
-          <div key={`meaning_${selectedVocab.word}_${idx}`} className={cx('meaning')}>
+          <div
+            key={`meaning_${selectedVocab.word}_${idx}`}
+            className={cx("meaning")}
+          >
             <p>{meaning.partOfSpeech}</p>
             <ul>
               {meaning.definitions.map((def, idx) => (
                 <li key={`def_${selectedVocab.word}_${idx}`}>
-                  {def.definition} <br />
-                  <span className={cx("eg")}>{def.example}</span>
+                  {def.definition}
+                  <p className={cx("eg")}>{def.example}</p>
                 </li>
               ))}
             </ul>

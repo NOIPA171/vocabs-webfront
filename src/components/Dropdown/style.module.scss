@@ -1,21 +1,37 @@
+@import "~styles/mixins.scss";
+
 .wrapper {
   position: relative;
   cursor: pointer;
   outline: none;
   display: inline-block;
   user-select: none;
+  border-radius: 50px;
+  transition: .3s;
+  // border: solid 1px transparent;
+  &:hover, &:active, &.active {
+    // border: solid 1px black;
+    box-shadow: $shadow;
+  }
   .title {
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
   }
   .options {
     position: absolute;
     border: solid 1px grey;
+    background: white;
     border-radius: 5px;
+    width: 100%;
+    left: -1px;
+    z-index: 10;
     .opt {
-    padding: 10px 15px;
-    background: rgba(0,0,0,0);
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0);
       &:hover {
-        background: rgba(0,0,0,.3);
+        background: rgba(0, 0, 0, 0.3);
       }
     }
   }

@@ -1,3 +1,5 @@
+@import "~styles/mixins.scss";
+
 @mixin iconBar {
   content: "";
   display: block;
@@ -7,12 +9,12 @@
   background: black;
 }
 
-$prrty5: #ff1800;
-$prrty4: #ffa62b;
-$prrty3: #360568;
-$prrty2: #06b4db;
-$prrty1: #98dfea;
-$prrty0: #ede7e3;
+$prrty5: $red;
+$prrty4: $orange;
+$prrty3: $purple;
+$prrty2: $blue;
+$prrty1: $l-blue;
+$prrty0: $wheat;
 
 .container {
   margin: 5px auto;

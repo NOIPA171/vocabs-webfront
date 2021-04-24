@@ -5,7 +5,7 @@ import styles from "./style.module.scss";
 
 const cx = className.bind(styles);
 
-const Dropdown = ({ options, title, onChange }) => {
+const Dropdown = ({ options, onChange }) => {
   const [isFocus, setIsFocus] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(options[0]);
@@ -25,7 +25,7 @@ const Dropdown = ({ options, title, onChange }) => {
         setIsOpen(false);
         setIsFocus(0);
       }}
-      className={cx("wrapper")}
+      className={cx("wrapper", { active: isFocus })}
     >
       <div className={cx("title")}>
         {selected.value} <ChevronDown />
