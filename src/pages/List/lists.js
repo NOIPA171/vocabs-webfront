@@ -1,5 +1,5 @@
 export const priorityList = [
-  { value: "All", key: null },
+  { value: "6", key: 6 },
   { value: "5", key: 5 },
   { value: "4", key: 4 },
   { value: "3", key: 3 },

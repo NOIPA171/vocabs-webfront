@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Card from "components/Card";
 import Message from "components/Message";
-import DisplayBlock from "components/DisplayBlock";
+import DisplayBlock from "pages/List/DisplayBlock";
 import Button from "components/Button";
 import Input from "components/Input";
 import Dropdown from "components/Dropdown";
@@ -14,40 +14,56 @@ import styles from "./style.module.scss";
 
 const cx = className.bind(styles);
 
-const sortList = (list) => list.sort((a, b) => b.priority - a.priority);
-const setStorage = (list) =>
-  localStorage.setItem("vocabs", JSON.stringify(list));
-
 const frmt = "YYYY/MM/DD";
-const fullList = JSON.parse(localStorage.getItem("vocabs") || "[]");
 
 export default function App() {
+  const fullList = useRef(JSON.parse(localStorage.getItem("vocabs") || "[]"));
+
   const [keyword, setKeyword] = useState("");
   const [date, setDate] = useState(moment().format(frmt));
   const [display, setDisplay] = useState(null);
-  const [list, setList] = useState(fullList);
+  const [list, setList] = useState(fullList.current);
   const [isLoading, setIsLoading] = useState(false);
   const [openIndex, setOpenIndex] = useState(-1);
 
+  const [listDates, setListDates] = useState([]);
+
   const [filterPrrty, setFilterPrrty] = useState(null);
+  const [filterDate, setFilterDate] = useState(null);
 
   useEffect(() => {
-    setList((prev) => {
-      if (filterPrrty === null) {
-        return fullList;
+    setList(() => {
+      let list = fullList.current.concat([]);
+      if (filterPrrty) {
+        list = list.filter((vocab) => vocab.priority === filterPrrty);
       }
-      return fullList.filter((vocab) => {
-        return vocab.priority === filterPrrty;
-      });
+      if (filterDate) {
+        list = list.filter((vocab) => vocab.created_at === filterDate);
+      }
+      return list;
     });
-  }, [filterPrrty]);
+  }, [filterPrrty, filterDate]);
 
-  const getListDatesData = () => {
-    return list.reduce((obj, currValue) => {
-      const date = currValue.created_at;
-      obj[date] = (obj[date] || 0) + 1;
-      return obj;
-    }, {});
+  useEffect(() => {
+    const getListDatesData = () => {
+      const data = fullList.current.reduce((obj, currValue) => {
+        const date = currValue.created_at;
+        obj[date] = (obj[date] || 0) + 1;
+        return obj;
+      }, {});
+      return Object.keys(data).map((date) => ({
+        value: date,
+        key: date,
+        note: data[date],
+      }));
+    };
+
+    setListDates(getListDatesData());
+  }, [fullList.current.length]);
+
+  const setStorage = (list) => {
+    localStorage.setItem("vocabs", JSON.stringify(list));
+    fullList.current = list;
   };
 
   const setData = (list) => {
@@ -86,7 +102,7 @@ export default function App() {
       setDisplay(newVocab);
     } else {
       const currPriority = list[duplicateIndex].priority;
-      list[duplicateIndex].priority = currPriority > 5 ? 5 : currPriority + 1;
+      list[duplicateIndex].priority = currPriority > 6 ? 6 : currPriority + 1;
       list.unshift(list[duplicateIndex]);
       list.splice(duplicateIndex + 1, 1);
       setDisplay({ ...list[duplicateIndex], status: "dupe" });
@@ -96,25 +112,32 @@ export default function App() {
   };
 
   const deleteVocab = (index) => {
-    const ans = window.confirm('are you sure?')
-    if(!ans) return;
+    const ans = window.confirm("are you sure?");
+    if (!ans) return;
     setOpenIndex(-1);
-    setList((prev) => {
-      const newList = prev.concat([]);
-      newList.splice(index, 1);
-      setStorage(newList);
-      return newList;
-    });
+    const currList = list.concat([]);
+    const vocab = currList.splice(index, 1);
+    setList(currList);
+    const currFullList = fullList.current.concat([]);
+    currFullList.splice(
+      currFullList.findIndex((v) => v.word === vocab[0].word),
+      1
+    );
+    setStorage(currFullList);
   };
 
   const updateVocab = (index, data) => {
-    setList((prev) => {
-      const currList = prev.concat([]);
-      const curr = currList[index];
-      currList.splice(index, 1, { ...curr, ...data });
-      setStorage(currList);
-      return currList;
-    });
+    const curr = list[index];
+    const currList = list.concat([]);
+    const vocab = currList.splice(index, 1, { ...curr, ...data });
+    setList(currList);
+    const currFullList = fullList.current.concat([]);
+    currFullList.splice(
+      currFullList.findIndex((v) => v.word === vocab[0].word),
+      1,
+      { ...curr, ...data }
+    );
+    setStorage(currFullList);
   };
 
   const handleOpen = (vocab, index) => {
@@ -124,7 +147,7 @@ export default function App() {
   const handlePriority = (evt, direction, data) => {
     evt.preventDefault();
     evt.stopPropagation();
-    if (data.priority + direction < 0 || data.priority + direction > 5) return;
+    if (data.priority + direction < 0 || data.priority + direction > 6) return;
     updateVocab({
       priority: data.priority + direction,
     });
@@ -156,24 +179,41 @@ export default function App() {
         <Button onClick={fetchData}>+</Button>
         <Button
           onClick={() => {
-            setOpenIndex(-1)
-            setList(shuffleArray(list));
+            setOpenIndex(-1);
+            setList((prev) => shuffleArray(prev));
           }}
         >
           Shuffle Deck
         </Button>
-        {/* <Button onClick={() => setData(sortList(list))}>sort deck</Button> */}
-        <Dropdown
-          options={priorityList}
-          onChange={(key) => {
-            setFilterPrrty(key);
-          }}
-        />
+        <div>
+          <Dropdown
+            hasAll
+            label="Priority:"
+            options={priorityList}
+            onChange={(key) => {
+              setFilterPrrty(key);
+            }}
+          />
+          <Dropdown
+            hasAll="All dates"
+            label="Date:"
+            options={listDates}
+            onChange={(key) => {
+              setFilterDate(key);
+            }}
+          />
+        </div>
       </div>
       <div className={cx("container")}>
         <div className={cx("list")}>
           <Message data={display} />
           {list.map((vocab, index) => {
+            if (filterDate && vocab.created_at !== filterDate) {
+              return null;
+            }
+            if (filterPrrty && vocab.priority !== filterPrrty) {
+              return null;
+            }
             return (
               <Card
                 key={vocab.word}

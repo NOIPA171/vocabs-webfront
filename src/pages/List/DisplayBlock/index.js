@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowDownCircle, ArrowUpCircle } from "react-feather";
 import TextareaAutosize from "react-textarea-autosize";
+import { shuffleArray } from "utils/functions";
 
 import className from "classnames/bind";
 import styles from "./style.module.scss";
@@ -24,7 +25,7 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
   const handlePass = (direction) => {
     if (
       selectedVocab.priority + direction < 0 ||
-      selectedVocab.priority + direction > 5
+      selectedVocab.priority + direction > 6
     )
       return;
     updateVocab({
@@ -76,9 +77,7 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
           />
         ) : (
           selectedVocab.notes && (
-            <>
-              Notes: <p className={cx("notes")}>{selectedVocab.notes}</p>
-            </>
+            <p className={cx("notes")}>{selectedVocab.notes}</p>
           )
         )}
         {selectedVocab.meanings.map((meaning, idx) => (
@@ -92,6 +91,9 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
                 <li key={`def_${selectedVocab.word}_${idx}`}>
                   {def.definition}
                   <p className={cx("eg")}>{def.example}</p>
+                  {def.synonyms && (
+                    <p>{shuffleArray(def.synonyms).slice(0, 3).join(", ")}</p>
+                  )}
                 </li>
               ))}
             </ul>

@@ -4,20 +4,29 @@
   position: relative;
   cursor: pointer;
   outline: none;
-  display: inline-block;
+  display: inline-flex;
   user-select: none;
-  border-radius: 50px;
-  transition: .3s;
+  align-items: center;
   // border: solid 1px transparent;
-  &:hover, &:active, &.active {
+  &:hover,
+  &:active,
+  &.active {
     // border: solid 1px black;
-    box-shadow: $shadow;
+    .title {
+      box-shadow: $shadow;
+    }
+  }
+  .label {
   }
   .title {
     font-weight: bold;
     display: flex;
     align-items: center;
     padding: 5px 10px;
+    border-radius: 50px;
+    transition: 0.3s;
+    position: relative;
+    margin-left: 5px;
   }
   .options {
     position: absolute;
@@ -26,12 +35,17 @@
     border-radius: 5px;
     width: 100%;
     left: -1px;
+    top: 100%;
     z-index: 10;
     .opt {
       padding: 10px 15px;
       background: rgba(0, 0, 0, 0);
       &:hover {
         background: rgba(0, 0, 0, 0.3);
+      }
+      span {
+        color: grey;
+        font-size: 0.8rem;
       }
     }
   }

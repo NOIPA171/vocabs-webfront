@@ -21,4 +21,6 @@
   flex: 0 0 50%;
   position: sticky;
   top: 20px;
+  height: calc(100vh - 40px);
+  overflow: auto;
 }

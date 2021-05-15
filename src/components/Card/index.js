@@ -20,7 +20,7 @@ const Card = ({ data, deleteVocab, updateVocab, handleOpen, isActive }) => {
   const handlePass = (evt, direction) => {
     evt.preventDefault();
     evt.stopPropagation();
-    if (data.priority + direction < 0 || data.priority + direction > 5) return;
+    if (data.priority + direction < 0 || data.priority + direction > 6) return;
     updateVocab({
       priority: data.priority + direction,
     });
