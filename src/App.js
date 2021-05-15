@@ -1,10 +1,10 @@
-import List from "pages/List";
+import List2 from "pages/List/v2";
 
 function App() {
   return (
     <div className="App">
       {/* <header className="App-header"> */}
-        <List />
+        <List2 />
       {/* </header> */}
     </div>
   );
