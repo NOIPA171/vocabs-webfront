@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowDownCircle, ArrowUpCircle } from "react-feather";
 import TextareaAutosize from "react-textarea-autosize";
-import { shuffleArray } from "utils/functions";
+import { shuffleArray, formatDisplayDate } from "utils/functions";
 
 import className from "classnames/bind";
 import styles from "./style.module.scss";
@@ -46,7 +46,7 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
     <div className={cx("container")}>
       <div className={cx("word")}>
         <h3>{selectedVocab.word}</h3>
-        <p>{selectedVocab.created_at}</p>
+        <p>{formatDisplayDate(selectedVocab.created_at)}</p>
         {/* <input value={selectedVocab.created_at} readOnly /> */}
       </div>
       <div className={cx("tools")}>
@@ -84,11 +84,14 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
           <>
             <div key={`result_${index}`}>
               {result.list.map((item, idx) => (
-                <div key={`item_${idx}`} className={cx("meaning")}>
+                <div
+                  key={`item_${result.groupNum}_${idx}`}
+                  className={cx("meaning")}
+                >
                   <p>{item.partOfSpeech}</p>
                   <ul>
                     {item.definitions.map((def, i) => (
-                      <li key={`def_${i}`}>
+                      <li key={`def_${index}_${result.groupNum}_${i}`}>
                         {def.definition}
                         <p className={cx("eg")}>{def.example}</p>
                         {def.synonyms && (

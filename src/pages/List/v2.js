@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import Card from "components/Card";
-import Card2 from 'components/Card/v2'
+import Card2 from "components/Card/v2";
 import Message from "components/Message";
 import DisplayBlock from "pages/List/DisplayBlock";
-import DisplayBlock2 from 'pages/List/DisplayBlock/v2'
+import DisplayBlock2 from "pages/List/DisplayBlock/v2";
 import Button from "components/Button";
 import Input from "components/Input";
 import Dropdown from "components/Dropdown";
@@ -70,96 +70,56 @@ export default function App() {
     setListDates(getListDatesData());
   }, [fullList.current.length]);
 
-  const setStorage = (list) => {
-    localStorage.setItem("vocabs", JSON.stringify(list));
-    fullList.current = list;
-  };
-
-  const setData = (list) => {
-    setStorage(list);
-    setList(list);
-  };
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    if (!keyword.trim().length) return;
-    await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en_US/${keyword}`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res[0]) {
-          setVocab({
-            ...res[0],
-            status: "success",
-            priority: 3,
-            created_at: date,
-          });
-          //has word
-        } else {
-          setDisplay({ status: "error", word: keyword });
-        }
-        setIsLoading(false);
-      });
-  };
-
-  const setVocab = (newVocab) => {
-    const list = JSON.parse(localStorage.getItem("vocabs") || "[]");
-    const duplicateIndex = list.findIndex(
-      (vocab) => vocab.word === newVocab.word
-    );
-    if (duplicateIndex === -1) {
-      list.unshift(newVocab);
-      setDisplay(newVocab);
-    } else {
-      const currPriority = list[duplicateIndex].priority;
-      list[duplicateIndex].priority = currPriority > 6 ? 6 : currPriority + 1;
-      list.unshift(list[duplicateIndex]);
-      list.splice(duplicateIndex + 1, 1);
-      setDisplay({ ...list[duplicateIndex], status: "dupe" });
-    }
-    setOpenIndex(0);
-    setData(list);
-  };
-
-  const deleteVocab = (index) => {
+  //v
+  const deleteVocab = (index, word) => {
     const ans = window.confirm("are you sure?");
     if (!ans) return;
-    setOpenIndex(-1);
-    const currList = list.concat([]);
-    const vocab = currList.splice(index, 1);
-    setList(currList);
-    const currFullList = fullList.current.concat([]);
-    currFullList.splice(
-      currFullList.findIndex((v) => v.word === vocab[0].word),
-      1
-    );
-    setStorage(currFullList);
-  };
-
-  const updateVocab = (index, data) => {
-    const curr = list[index];
-    const currList = list.concat([]);
-    const vocab = currList.splice(index, 1, { ...curr, ...data });
-    setList(currList);
-    const currFullList = fullList.current.concat([]);
-    currFullList.splice(
-      currFullList.findIndex((v) => v.word === vocab[0].word),
-      1,
-      { ...curr, ...data }
-    );
-    setStorage(currFullList);
+    setIsLoading(true);
+    axios
+      .post(`http://localhost:5500/vocab/delete/${word}`)
+      .then((res) => {
+        setOpenIndex(-1);
+        const currList = list2.concat([]);
+        currList.splice(index, 1);
+        setList2(currList);
+      })
+      .catch((err) => {
+        console.log("error", err);
+        setIsLoading(false);
+      });
   };
 
   const handleOpen = (vocab, index) => {
     setOpenIndex((prev) => (prev === index ? -1 : index));
   };
 
-  const test = async () => {
-    fetch(`http://localhost:5500/vocab/search2/${keyword}`)
-      .then((res) => res.json())
+  //v
+  const addVocab = () => {
+    axios
+      .post(`http://localhost:5500/vocab/search/${keyword}`, {
+        created_at: moment(new Date(date)).format("YYYY-MM-DD HH:mm:ss"),
+      })
       .then((res) => {
-        console.log(res);
+        if (res.status === 201) {
+          // dupe vocab
+          console.log("dupe!!");
+          const newList = list2.concat([]);
+          const wordIdx = newList.findIndex(
+            (word) => word.word === res.data.word
+          );
+          if (newList[wordIdx].priority < 6) {
+            newList[wordIdx].priority += 1;
+          }
+          newList.unshift(newList[wordIdx]);
+          newList.splice(wordIdx + 1, 1);
+          setList2(newList);
+          return;
+        }
+        setList2((prev) => [res.data].concat(prev));
+      })
+      .catch((err) => {
+        console.log("err", err);
       });
-    // .catch((err) => console.log("error", err));
   };
 
   const fetchList = () => {
@@ -167,8 +127,7 @@ export default function App() {
     axios(`http://localhost:5500/vocab/list`)
       .then((res) => {
         setIsLoading(false);
-        setList2(res.data)
-        console.log(res);
+        setList2(res.data);
       })
       .catch((err) => {
         setIsLoading(false);
@@ -176,40 +135,22 @@ export default function App() {
       });
   };
 
-  // const insertword = (word) => {
-  //   return new Promise((resolve, rej) => {
-  //     axios
-  //       .post(`http://localhost:5500/vocab/upload-localstorage`, {
-  //         word: word.word,
-  //         priority: word.priority,
-  //         created_at: moment(new Date(word.created_at)).format(
-  //           "YYYY-MM-DD HH:mm:ss"
-  //         ),
-  //         notes: word.notes,
-  //         meanings: word.meanings,
-  //       })
-  //       .then((res) => {
-  //         // console.log("resove", word.word);
-  //         // setTimeout(() => {
-  //         resolve(res);
-  //         // }, 500);
-  //       })
-  //       .catch((err) => {
-  //         console.log("an error has occurred", err, word);
-  //         resolve(err);
-  //       });
-  //   });
-  // };
-
-  // const insertLocalStorage = async (index) => {
-  //   if (!list[index]) {
-  //     console.log("DONE!!");
-  //     return;
-  //   }
-  //   console.log("fetch word", list[index].word, "index", index);
-  //   const data = await insertword(list[index]);
-  //   insertLocalStorage(index + 1);
-  // };
+  const updateWord = (vocab, index, data) => {
+    const query = Object.keys(data)
+      .map((key) => `${key}=${data[key]}`)
+      .join("&");
+    axios
+      .post(`http://localhost:5500/vocab/update/${vocab.word}?${query}`)
+      .then((res) => {
+        const newList = list2.concat([]);
+        newList.splice(index, 1, { ...vocab, ...data });
+        setList2(newList);
+      })
+      .catch((err) => {
+        console.log("error", err);
+        setIsLoading(false);
+      });
+  };
 
   return (
     <div className="App">
@@ -229,12 +170,12 @@ export default function App() {
           onChange={(evt) => setKeyword(evt.target.value)}
           onKeyDown={(evt) => {
             if (evt.key === "Enter") {
-              fetchData();
+              addVocab();
             }
           }}
           disabled={isLoading}
         />
-        <Button onClick={fetchData}>+</Button>
+        <Button onClick={addVocab}>+</Button>
         <Button
           onClick={() => {
             setOpenIndex(-1);
@@ -274,10 +215,10 @@ export default function App() {
             }
             return (
               <Card2
-                key={vocab.word}
+                key={`card_${vocab.word}`}
                 data={vocab}
-                deleteVocab={() => deleteVocab(index)}
-                updateVocab={(data) => updateVocab(index, data)}
+                deleteVocab={() => deleteVocab(index, vocab.word)}
+                updateVocab={(data) => updateWord(vocab, index, data)}
                 handleOpen={() => handleOpen(vocab, index)}
                 isActive={openIndex === index}
               />
@@ -287,7 +228,9 @@ export default function App() {
         <div className={cx("display")}>
           <DisplayBlock2
             selectedVocab={list2[openIndex]}
-            updateVocab={(data) => updateVocab(openIndex, data)}
+            updateVocab={(data) =>
+              updateWord(list2[openIndex], openIndex, data)
+            }
           />
         </div>
       </div>

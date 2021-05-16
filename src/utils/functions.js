@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export const shuffleArray = (array) => {
   const arr = array.concat([]);
   for (let i = arr.length - 1; i > 0; i--) {
@@ -8,3 +10,7 @@ export const shuffleArray = (array) => {
   }
   return arr;
 };
+
+export const formatDisplayDate = (string) => {
+  return moment(string).format('YYYY/MM/DD')
+}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Trash2, ArrowDownCircle, ArrowUpCircle, ArrowUp } from "react-feather";
+import { formatDisplayDate } from "utils/functions";
 
 import className from "classnames/bind";
 import styles from "./style.module.scss";
@@ -11,11 +12,11 @@ const getRandomIdx = (arr) => Math.round(Math.random() * (arr?.length - 1));
 const Card = ({ data, deleteVocab, updateVocab, handleOpen, isActive }) => {
   const getRandomExample = () => {
     if (!data) return "";
-    const randomGroupIdx = getRandomIdx(data.results)
-    const randomGroup = data.results[randomGroupIdx].list
-    const randomTypeIdx = getRandomIdx(randomGroup)
-    const randomDefIdx = getRandomIdx(randomGroup[randomTypeIdx].definitions)
-    return randomGroup[randomTypeIdx].definitions[randomDefIdx].example || ''
+    const randomGroupIdx = getRandomIdx(data.results);
+    const randomGroup = data.results[randomGroupIdx].list;
+    const randomTypeIdx = getRandomIdx(randomGroup);
+    const randomDefIdx = getRandomIdx(randomGroup[randomTypeIdx].definitions);
+    return randomGroup[randomTypeIdx].definitions[randomDefIdx].example || "";
   };
 
   const [example, setExample] = useState(() => getRandomExample());
@@ -28,7 +29,6 @@ const Card = ({ data, deleteVocab, updateVocab, handleOpen, isActive }) => {
       priority: data.priority + direction,
     });
   };
-
 
   if (!data) {
     return null;
@@ -43,7 +43,7 @@ const Card = ({ data, deleteVocab, updateVocab, handleOpen, isActive }) => {
       <div className={cx("word")}>
         <div className={cx("info")}>
           <h3>{data.word}</h3>
-          <span>{data.created_at}</span>
+          <span>{formatDisplayDate(data.created_at)}</span>
         </div>
         <p className={cx("eg")}>{example}</p>
       </div>
