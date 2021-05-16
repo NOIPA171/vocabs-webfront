@@ -8,7 +8,7 @@ const cx = className.bind(styles);
 const Dropdown = ({ options, onChange, hasAll, className, label }) => {
   const allOptions = hasAll
   ? [
-    { value: typeof hasAll === "string" ? hasAll : "All", key: null },
+    { value: typeof hasAll === "string" ? hasAll : "All", key: 'all' },
   ].concat(options)
   : options;
   

@@ -1,15 +1,19 @@
-import React, { useEffect, useState, useRef } from "react";
-import Card from "components/Card";
+import React, { useEffect, useState } from "react";
 import Card2 from "components/Card/v2";
 import Message from "components/Message";
-import DisplayBlock from "pages/List/DisplayBlock";
 import DisplayBlock2 from "pages/List/DisplayBlock/v2";
 import Button from "components/Button";
 import Input from "components/Input";
 import Dropdown from "components/Dropdown";
 
 import { priorityList } from "./lists";
-import { shuffleArray } from "utils/functions";
+import {
+  shuffleArray,
+  formatApiDate,
+  formatDisplayDate,
+  formatInputDate,
+  mapObjectToQuery,
+} from "utils/functions";
 import moment from "moment-timezone";
 import className from "classnames/bind";
 import styles from "./style.module.scss";
@@ -21,54 +25,28 @@ const cx = className.bind(styles);
 const frmt = "YYYY/MM/DD";
 
 export default function App() {
-  const fullList = useRef(JSON.parse(localStorage.getItem("vocabs") || "[]"));
-
   const [keyword, setKeyword] = useState("");
   const [date, setDate] = useState(moment().format(frmt));
-  const [display, setDisplay] = useState(null);
-  const [list, setList] = useState(fullList.current);
+  const [message, setMessage] = useState(null);
   const [list2, setList2] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [openIndex, setOpenIndex] = useState(-1);
 
   const [listDates, setListDates] = useState([]);
 
-  const [filterPrrty, setFilterPrrty] = useState(null);
-  const [filterDate, setFilterDate] = useState(null);
+  const [filterPrrty, setFilterPrrty] = useState("all");
+  const [filterDate, setFilterDate] = useState("all");
 
   useEffect(() => {
-    fetchList();
+    getOptions();
   }, []);
 
   useEffect(() => {
-    setList(() => {
-      let list = fullList.current.concat([]);
-      if (filterPrrty) {
-        list = list.filter((vocab) => vocab.priority === filterPrrty);
-      }
-      if (filterDate) {
-        list = list.filter((vocab) => vocab.created_at === filterDate);
-      }
-      return list;
+    fetchList({
+      priority: filterPrrty,
+      created_at: filterDate !== "all" ? formatApiDate(filterDate) : "all",
     });
   }, [filterPrrty, filterDate]);
-
-  useEffect(() => {
-    const getListDatesData = () => {
-      const data = fullList.current.reduce((obj, currValue) => {
-        const date = currValue.created_at;
-        obj[date] = (obj[date] || 0) + 1;
-        return obj;
-      }, {});
-      return Object.keys(data).map((date) => ({
-        value: date,
-        key: date,
-        note: data[date],
-      }));
-    };
-
-    setListDates(getListDatesData());
-  }, [fullList.current.length]);
 
   //v
   const deleteVocab = (index, word) => {
@@ -84,7 +62,7 @@ export default function App() {
         setList2(currList);
       })
       .catch((err) => {
-        console.log("error", err);
+        console.log("error", err.response);
         setIsLoading(false);
       });
   };
@@ -97,7 +75,7 @@ export default function App() {
   const addVocab = () => {
     axios
       .post(`http://localhost:5500/vocab/search/${keyword}`, {
-        created_at: moment(new Date(date)).format("YYYY-MM-DD HH:mm:ss"),
+        created_at: formatApiDate(date),
       })
       .then((res) => {
         if (res.status === 201) {
@@ -107,47 +85,83 @@ export default function App() {
           const wordIdx = newList.findIndex(
             (word) => word.word === res.data.word
           );
-          if (newList[wordIdx].priority < 6) {
-            newList[wordIdx].priority += 1;
+          const vocab = newList[wordIdx];
+          if (vocab.priority < 6) {
+            vocab.priority += 1;
           }
-          newList.unshift(newList[wordIdx]);
+          newList.unshift(vocab);
           newList.splice(wordIdx + 1, 1);
+          setMessage({
+            status: res.status,
+            word: vocab.word,
+            priority: vocab.priority,
+          });
           setList2(newList);
           return;
         }
-        setList2((prev) => [res.data].concat(prev));
+        setMessage(null)
+        setList2((prev) => {
+          const newList = [res.data].concat(prev);
+          return newList;
+        });
       })
       .catch((err) => {
-        console.log("err", err);
+        if (err.response.status === 401) {
+          // fetch dictionary api error
+          setMessage({
+            status: err.response.status,
+          });
+        }
+        console.log("error", err.response);
       });
   };
 
-  const fetchList = () => {
+  const fetchList = (query) => {
     setIsLoading(true);
-    axios(`http://localhost:5500/vocab/list`)
+    axios(`http://localhost:5500/vocab/list${mapObjectToQuery(query)}`)
       .then((res) => {
         setIsLoading(false);
         setList2(res.data);
       })
       .catch((err) => {
         setIsLoading(false);
-        console.log("error", err);
+        console.log("error", err.response);
       });
   };
 
   const updateWord = (vocab, index, data) => {
-    const query = Object.keys(data)
-      .map((key) => `${key}=${data[key]}`)
-      .join("&");
     axios
-      .post(`http://localhost:5500/vocab/update/${vocab.word}?${query}`)
+      .post(
+        `http://localhost:5500/vocab/update/${vocab.word}${mapObjectToQuery(
+          data
+        )}`
+      )
       .then((res) => {
         const newList = list2.concat([]);
         newList.splice(index, 1, { ...vocab, ...data });
         setList2(newList);
       })
       .catch((err) => {
-        console.log("error", err);
+        console.log("error", err.response);
+        setIsLoading(false);
+      });
+  };
+
+  const getOptions = () => {
+    setIsLoading(true);
+    axios
+      .get(`http://localhost:5500/vocab/vocabs-per-day`)
+      .then((res) => {
+        setListDates(
+          res.data.map((date) => ({
+            value: formatDisplayDate(date.created_at),
+            key: date.created_at,
+            note: date.total,
+          }))
+        );
+      })
+      .catch((err) => {
+        console.log("error", err.response);
         setIsLoading(false);
       });
   };
@@ -160,9 +174,9 @@ export default function App() {
       <div className={cx("bar")}>
         <Input
           type="date"
-          value={moment(date).format("YYYY-MM-DD")}
+          value={formatInputDate(date)}
           onChange={(evt) => {
-            setDate(moment(evt.target.value).format(frmt));
+            setDate(formatDisplayDate(evt.target.value));
           }}
         />
         <Input
@@ -179,7 +193,7 @@ export default function App() {
         <Button
           onClick={() => {
             setOpenIndex(-1);
-            setList((prev) => shuffleArray(prev));
+            setList2((prev) => shuffleArray(prev));
           }}
         >
           Shuffle Deck
@@ -205,14 +219,8 @@ export default function App() {
       </div>
       <div className={cx("container")}>
         <div className={cx("list")}>
-          <Message data={display} />
+          <Message data={message} />
           {list2.map((vocab, index) => {
-            if (filterDate && vocab.created_at !== filterDate) {
-              return null;
-            }
-            if (filterPrrty && vocab.priority !== filterPrrty) {
-              return null;
-            }
             return (
               <Card2
                 key={`card_${vocab.word}`}

@@ -8,10 +8,10 @@ const Message = ({ data, ...props }) => {
   const getMessage = () => {
     let message = "";
     switch (data.status) {
-      case "error":
+      case 401:
         message = "Error, please check your spelling";
         break;
-      case "dupe":
+      case 201:
         message = `You've already added ${data.word}! Priority now at ${data.priority}`;
         break;
       default:

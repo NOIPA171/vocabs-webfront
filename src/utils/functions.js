@@ -12,5 +12,25 @@ export const shuffleArray = (array) => {
 };
 
 export const formatDisplayDate = (string) => {
-  return moment(string).format('YYYY/MM/DD')
-}
+  return moment(string).format("YYYY/MM/DD");
+};
+
+export const formatApiDate = (string) => {
+  return moment(string).format("YYYY-MM-DD HH:mm:ss");
+};
+
+export const formatInputDate = (string) => {
+  return moment(string).format("YYYY-MM-DD");
+};
+
+export const mapObjectToQuery = (obj) => {
+  if (!obj) {
+    return "";
+  }
+  return (
+    "?" +
+    Object.keys(obj)
+      .map((key) => `${key}=${obj[key]}`)
+      .join("&")
+  );
+};
