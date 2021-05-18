@@ -11,7 +11,7 @@ const getRandomIdx = (arr) => Math.round(Math.random() * (arr?.length - 1));
 
 const Card = ({ data, deleteVocab, updateVocab, handleOpen, isActive }) => {
   const getRandomExample = () => {
-    if (!data) return "";
+    if (!data || !data.results[0].list[0].partOfSpeech) return "";
     const randomGroupIdx = getRandomIdx(data.results);
     const randomGroup = data.results[randomGroupIdx].list;
     const randomTypeIdx = getRandomIdx(randomGroup);

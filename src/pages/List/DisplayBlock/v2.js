@@ -90,13 +90,13 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
                 >
                   <p>{item.partOfSpeech}</p>
                   <ul>
-                    {item.definitions.map((def, i) => (
+                    {item.definitions && item.definitions.map((def, i) => (
                       <li key={`def_${index}_${result.groupNum}_${i}`}>
                         {def.definition}
                         <p className={cx("eg")}>{def.example}</p>
                         {def.synonyms && (
                           <p>
-                            {shuffleArray(def.synonyms).slice(0, 3).join(", ")}
+                            {def.synonyms.join(", ")}
                           </p>
                         )}
                       </li>

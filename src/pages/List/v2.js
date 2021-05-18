@@ -38,7 +38,7 @@ export default function App() {
   const [filterDate, setFilterDate] = useState("all");
 
   useEffect(() => {
-    getOptions();
+    getDateList();
   }, []);
 
   useEffect(() => {
@@ -57,9 +57,11 @@ export default function App() {
       .post(`http://localhost:5500/vocab/delete/${word}`)
       .then((res) => {
         setOpenIndex(-1);
+        const vocab = list2[index];
         const currList = list2.concat([]);
         currList.splice(index, 1);
         setList2(currList);
+        shouldUpdateDateList(vocab.created_at, "delete");
       })
       .catch((err) => {
         console.log("error", err.response);
@@ -99,20 +101,21 @@ export default function App() {
           setList2(newList);
           return;
         }
-        setMessage(null)
+        shouldUpdateDateList(res.data.created_at, "add");
+        setMessage(null);
         setList2((prev) => {
           const newList = [res.data].concat(prev);
           return newList;
         });
       })
       .catch((err) => {
-        if (err.response.status === 401) {
+        if (err?.response.status === 401) {
           // fetch dictionary api error
           setMessage({
             status: err.response.status,
           });
         }
-        console.log("error", err.response);
+        console.log("error", err?.response);
       });
   };
 
@@ -147,11 +150,12 @@ export default function App() {
       });
   };
 
-  const getOptions = () => {
+  const getDateList = () => {
     setIsLoading(true);
     axios
       .get(`http://localhost:5500/vocab/vocabs-per-day`)
       .then((res) => {
+        setIsLoading(false);
         setListDates(
           res.data.map((date) => ({
             value: formatDisplayDate(date.created_at),
@@ -164,6 +168,27 @@ export default function App() {
         console.log("error", err.response);
         setIsLoading(false);
       });
+  };
+
+  const shouldUpdateDateList = (date, action) => {
+    //for simplicity's sake, fetch api when deleting vocab or adding new date
+    if (
+      action === "delete" ||
+      listDates.findIndex((option) => option.key === formatApiDate(date)) === -1
+    ) {
+      console.log("just get the api...");
+      getDateList();
+      return;
+    }
+    if (action === "add") {
+      console.log("I hope I made this right...");
+      const newList = listDates.concat([]);
+      const dateIndex = listDates.findIndex(
+        (option) => option.key === formatApiDate(date)
+      );
+      newList[dateIndex].note += 1;
+      setListDates(newList);
+    }
   };
 
   return (
