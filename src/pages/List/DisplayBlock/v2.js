@@ -47,6 +47,11 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
       <div className={cx("word")}>
         <h3>{selectedVocab.word}</h3>
         <p>{formatDisplayDate(selectedVocab.created_at)}</p>
+        {selectedVocab.updated_at && (
+          <p>
+            priority updated at: {formatDisplayDate(selectedVocab.updated_at)}
+          </p>
+        )}
         {/* <input value={selectedVocab.created_at} readOnly /> */}
       </div>
       <div className={cx("tools")}>
@@ -90,17 +95,14 @@ const DisplayBlock = ({ selectedVocab, deleteVocab, updateVocab }) => {
                 >
                   <p>{item.partOfSpeech}</p>
                   <ul>
-                    {item.definitions && item.definitions.map((def, i) => (
-                      <li key={`def_${index}_${result.groupNum}_${i}`}>
-                        {def.definition}
-                        <p className={cx("eg")}>{def.example}</p>
-                        {def.synonyms && (
-                          <p>
-                            {def.synonyms.join(", ")}
-                          </p>
-                        )}
-                      </li>
-                    ))}
+                    {item.definitions &&
+                      item.definitions.map((def, i) => (
+                        <li key={`def_${index}_${result.groupNum}_${i}`}>
+                          {def.definition}
+                          <p className={cx("eg")}>{def.example}</p>
+                          {def.synonyms && <p>{def.synonyms.join(", ")}</p>}
+                        </li>
+                      ))}
                   </ul>
                 </div>
               ))}

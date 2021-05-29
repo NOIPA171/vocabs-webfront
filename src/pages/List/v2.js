@@ -64,7 +64,7 @@ export default function App() {
         shouldUpdateDateList(vocab.created_at, "delete");
       })
       .catch((err) => {
-        console.log("error", err.response);
+        console.log("delete error", err.response);
         setIsLoading(false);
       });
   };
@@ -82,7 +82,7 @@ export default function App() {
       .then((res) => {
         if (res.status === 201) {
           // dupe vocab
-          console.log("dupe!!");
+          console.log("dupe!!", res);
           const newList = list2.concat([]);
           const wordIdx = newList.findIndex(
             (word) => word.word === res.data.word
@@ -109,13 +109,13 @@ export default function App() {
         });
       })
       .catch((err) => {
-        if (err?.response.status === 401) {
+        if (err?.response?.status === 401) {
           // fetch dictionary api error
           setMessage({
             status: err.response.status,
           });
         }
-        console.log("error", err?.response);
+        console.log("fetch dictionary api error", err?.response);
       });
   };
 
@@ -128,7 +128,7 @@ export default function App() {
       })
       .catch((err) => {
         setIsLoading(false);
-        console.log("error", err.response);
+        console.log("fetch list error", err.response);
       });
   };
 
@@ -145,7 +145,7 @@ export default function App() {
         setList2(newList);
       })
       .catch((err) => {
-        console.log("error", err.response);
+        console.log("update error", err.response);
         setIsLoading(false);
       });
   };
@@ -165,7 +165,7 @@ export default function App() {
         );
       })
       .catch((err) => {
-        console.log("error", err.response);
+        console.log("get date list error", err.response);
         setIsLoading(false);
       });
   };
@@ -176,12 +176,10 @@ export default function App() {
       action === "delete" ||
       listDates.findIndex((option) => option.key === formatApiDate(date)) === -1
     ) {
-      console.log("just get the api...");
       getDateList();
       return;
     }
     if (action === "add") {
-      console.log("I hope I made this right...");
       const newList = listDates.concat([]);
       const dateIndex = listDates.findIndex(
         (option) => option.key === formatApiDate(date)
@@ -192,10 +190,7 @@ export default function App() {
   };
 
   return (
-    <div className="App">
-      <nav>
-        <h1>Vocab Tool :D</h1>
-      </nav>
+    <>
       <div className={cx("bar")}>
         <Input
           type="date"
@@ -267,6 +262,6 @@ export default function App() {
           />
         </div>
       </div>
-    </div>
+    </>
   );
 }
