@@ -138,11 +138,7 @@ export default function App() {
 
   const updateWord = (vocab, index, data) => {
     axios
-      .post(
-        `http://localhost:5500/vocab/update/${vocab.word}${mapObjectToQuery(
-          data
-        )}`
-      )
+      .post(`http://localhost:5500/vocab/update/${vocab.word}`, data)
       .then((res) => {
         const newList = list2.concat([]);
         newList.splice(index, 1, { ...vocab, ...data });
