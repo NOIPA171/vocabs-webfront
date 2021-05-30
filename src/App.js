@@ -1,16 +1,15 @@
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import List2 from "pages/List/v2";
 import Chart from "pages/Chart";
+import Navbar from "components/Navbar";
+import GoToTop from "components/GoToTop";
 
 function App() {
   return (
     <Router>
       <div className="App">
-        <nav>
-          <h1>Vocab Tool :D</h1>
-          <Link to="/">Home</Link>
-          <Link to="/chart">Chart</Link>
-        </nav>
+        <Navbar />
+        <GoToTop />
         <div className="container">
           <Switch>
             <Route path="/chart">
