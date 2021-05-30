@@ -27,6 +27,9 @@ const Chart = () => {
         return (
           <div className={cx("card")} key={item.created_at}>
             <h3>{formatDisplayDate(item.created_at)}</h3>
+            {item.latest_update && (
+              <p>latest update: {formatDisplayDate(item.latest_update)}</p>
+            )}
             <p>total: {item.data.reduce((num, d) => num + d.count, 0)}</p>
             <ul>
               {item.data.map((d) => (
