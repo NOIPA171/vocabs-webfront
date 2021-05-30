@@ -74,9 +74,13 @@ export default function App() {
   };
 
   //v
-  const addVocab = () => {
+  const addVocab = (isCustom) => {
+    const api = isCustom
+      ? `http://localhost:5500/vocab/insert-custom/${keyword}`
+      : `http://localhost:5500/vocab/search/${keyword}`;
+
     axios
-      .post(`http://localhost:5500/vocab/search/${keyword}`, {
+      .post(api, {
         created_at: formatApiDate(date),
       })
       .then((res) => {
@@ -218,6 +222,7 @@ export default function App() {
         >
           Shuffle Deck
         </Button>
+        <Button onClick={() => addVocab(true)}>Custom add</Button>
         <div>
           <Dropdown
             hasAll
