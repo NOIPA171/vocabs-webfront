@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { formatDisplayDate } from "utils/functions";
+import moment from "moment";
 
 import axios from "axios";
 
@@ -28,7 +29,9 @@ const Chart = () => {
           <div className={cx("card")} key={item.created_at}>
             <h3>{formatDisplayDate(item.created_at)}</h3>
             {item.latest_update && (
-              <p>latest update: {formatDisplayDate(item.latest_update)}</p>
+              <p>
+                latest update: <br /> {moment(item.latest_update).fromNow()}
+              </p>
             )}
             <p>total: {item.data.reduce((num, d) => num + d.count, 0)}</p>
             <ul>
